@@ -1,0 +1,3 @@
+useDynLib(BDStatMethExamples)
+importFrom(Rcpp, evalCpp)
+export("bdCCA_hdf5_rcpp")
