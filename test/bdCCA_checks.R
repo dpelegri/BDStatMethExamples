@@ -17,52 +17,43 @@ bdCCA_hdf5_rcpp( hdf5_filename, "data/X", "data/Y", bcenter = TRUE, bscale = FAL
 
 h5ls(hdf5_filename)
 
-
-
-
-# devtools::reload(pkgload::inst("BigDataStatMeth"))
-
-file <- "/Users/mailos/PhD/dummy/Analyses/TCGA_CCA/cca_tcga_small_rcpp.hdf5"
-data_normal <- "/NORMALIZED/data/X"
-data <- "/data/X"
-means <- "/NORMALIZED/data/mean.X"
-sds <- "/NORMALIZED/data/sd.X"
-
-
-X <-  h5read(file,data)
-X.norm <-  h5read(file,data_normal)
-
-
-X.means <-  h5read(file, means)
-X.sds <-  h5read(file, sds)
-
-
-X[1:5,1:5]
-Xnorm <- scale(X,TRUE, TRUE)
-Xnorm[1:5,1:5]
-X.norm[1:5,1:5]
-
-all.equal(Xnorm, X.norm)
-
-Xnorm[2165:2171,495:500]
-X.norm[2165:2171,495:500]
-all.equal(Xnorm[2165:2171,495:500],
-          X.norm[2165:2171,495:500])
-
-
-# Correctex
-((X[,2] - X.means[2])[1:5])/X.sds[2]
-((X[,1] - X.means[1])[1:5])/X.sds[1]
-
-# Malament
-((X[2,] - X.means[2])[1:5])/X.sds[2]
-((X[1,] - X.means[1])[1:5])/X.sds[1]
-
-
-
-scale(X,TRUE, FALSE)[1:5,1:5]
-
-
-
-
-all.equal( round( diag(res), 5), ound( diagonal2, 5) )
+# 
+# 
+# 
+# # devtools::reload(pkgload::inst("BigDataStatMeth"))
+# 
+# filename <- "/Users/mailos/PhD/dummy/Analyses/TCGA_CCA/cca_tcga_small_rcpp.hdf5"
+# ncolsX <- 500
+# ncolsY <- 339
+# 
+# 
+#     
+#     # Read data from file
+#     h5f = H5Fopen(filename)
+#     XQ <- h5f$Step6$XQ[1:ncolsX, 1:ncolsX]
+#     YQ <- h5f$Step6$YQ[1:ncolsY, 1:ncolsY]
+#     XR <- h5f$Step3$Final_QR$XRt.R
+#     YR <- h5f$Step3$Final_QR$YRt.R
+#     d <- h5f$SVD$CrossProd_XQ_x_YQ$d
+#     u <- h5f$SVD$CrossProd_XQ_x_YQ$u
+#     v <- h5f$SVD$CrossProd_XQ_x_YQ$v
+#     xcenter <- h5f$NORMALIZED$data$mean.X
+#     ycenter <- h5f$NORMALIZED$data$mean.Y
+#     x.names <- h5f$data$.X_dimnames$`2`
+#     y.names <- h5f$data$.Y_dimnames$`2`
+#     h5closeAll()
+#     
+#     # Get qr compact (more or less)
+#     XR[lower.tri(XR, diag = F)] <- 0
+#     XQ[upper.tri(XQ, diag = T)] <- 0
+#     XQR <- XR + XQ
+#     XQR[1:5,1:5]
+#     
+#     
+#    
+#     YR[lower.tri(YR, diag = F)] <- 0
+#     YQ[upper.tri(YQ, diag = T)] <- 0
+#     YQR <- YR + YQ
+#     YQR[1:5,1:5]
+#     
+#     

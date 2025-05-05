@@ -107,29 +107,104 @@ void writeCCAComponents_hdf5_rcpp (hdf5Dataset* dsX, hdf5Dataset* dsY);
     
     
     
-    
-    
-    void writeCCAComponents_hdf5_rcpp (hdf5Dataset* dsX, hdf5Dataset* dsY) 
+    void writeCCAComponents_hdf5_rcpp(std::string filename, int ncolsX, int ncolsY)
     {
         
-        try {
-            
-            
-            
-            
-        } catch(std::exception& ex) {
-            checkClose_file(dsX, dsY);
-            Rcout<< "c++ exception writeCCAComponents_hdf5_rcpp: "<< ex.what() << "\n";
-            return void();
-        }
+        Rcpp::Environment base("package:BDStatMethExamples"); 
         
+        Rcpp::Function write_components = base["writeCCAComponents_hdf5"];    
+        
+        write_components( Rcpp::_["filename"] = wrap(filename),
+                          Rcpp::_["ncolsX"]  = ncolsX,
+                          Rcpp::_["ncolsY"]  = ncolsY); 
         
         return void();
-        
     }
+
     
     
     
+    // 
+    // void writeCCAComponents_hdf5_rcpp(hdf5Dataset* dsX, hdf5Dataset* dsY) 
+    // {
+    //     
+    //     hdf5Dataset* dstmpX = nullptr;
+    //     hdf5Dataset* dstmpY = nullptr;
+    //     
+    //     std::vector<hsize_t> stride = {1, 1},
+    //                          block = {1, 1};
+    //     
+    //     try {
+    //         
+    //         hsize_t ncolsX = dsX->ncols_r(),
+    //                 ncolsY = dsY->ncols_r();
+    //         
+    //         std::vector<double> vdXQ( ncolsX * ncolsX);
+    //         std::vector<double> vdYQ( ncolsY * ncolsY);
+    //         std::vector<double> vdXR( ncolsX * ncolsX);
+    //         std::vector<double> vdYR( ncolsY * ncolsY);
+    //         
+    //         Eigen::MatrixXd XQR;
+    //         Eigen::MatrixXd YQR;
+    //         
+    //         Eigen::MatrixXd xcoef;
+    //         Eigen::MatrixXd ycoef;
+    //         
+    //         {
+    //             dstmpX =  new hdf5Dataset(dsX->getFileName(), "Step6/XQ", false);  dstmpX->openDataset();
+    //             dstmpX->readDatasetBlock( {0, 0}, {ncolsX, ncolsX}, stride, block, vdXQ.data() );
+    //             XQR = Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor>> (vdXQ.data(), ncolsX, ncolsX );
+    //             
+    //             dstmpY =  new hdf5Dataset(dsY->getFileName(), "Step6/YQ", false); dstmpY->openDataset();
+    //             dstmpY->readDatasetBlock( {0, 0}, {ncolsY, ncolsY}, stride, block, vdYQ.data() );
+    //             YQR = Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor>> (vdYQ.data(), ncolsY, ncolsY );
+    //             
+    //             delete dstmpX; dstmpX = nullptr;
+    //             delete dstmpY; dstmpY = nullptr;
+    //             
+    //             dstmpX = new hdf5Dataset(dsX->getFileName(), "Step3/Final_QR/XRt.R", false); dstmpX->openDataset();
+    //             dstmpX->readDatasetBlock( {0, 0}, {ncolsX, ncolsX}, stride, block, vdXR.data() );
+    //             Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor>> XR (vdXR.data(), ncolsX, ncolsX );
+    //             
+    //             dstmpY = new hdf5Dataset(dsX->getFileName(), "Step3/Final_QR/YRt.R", false); dstmpY->openDataset();
+    //             dstmpY->readDatasetBlock( {0, 0}, {ncolsY, ncolsY}, stride, block, vdYR.data() );
+    //             Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor>> YR (vdYR.data(), ncolsY, ncolsY );
+    //             
+    //             delete dstmpX; dstmpX = nullptr;
+    //             delete dstmpY; dstmpY = nullptr;
+    //             
+    //             XQR.triangularView<Eigen::Upper>() = XR.triangularView<Eigen::Upper>();
+    //             YQR.triangularView<Eigen::Upper>() = YR.triangularView<Eigen::Upper>();
+    //             
+    //         }
+    //         
+    //         
+    //         
+    //         // XQR.triangularView<Eigen::Lower>() = XQ.triangularView<Eigen::Lower>();
+    //         
+    // 
+    //         // YQR.triangularView<Eigen::Lower>() = YR.triangularView<Eigen::Lower>();
+    //         // YQR.triangularView<Eigen::Upper>() = YQ.triangularView<Eigen::Upper>();
+    // 
+    //         
+    //         // Rcpp::Rcout<<"\n La Matriu YQR val:\n"<<YQR.block(0,0,5,5)<<"\n";
+    //         
+    //         // dstmpX->readDatasetBlock()
+    //         // 
+    //         // XQR <- XR + XQ
+    //         
+    //         
+    //     } catch(std::exception& ex) {
+    //         checkClose_file(dsX, dsY, dstmpX, dstmpY);
+    //         Rcout<< "c++ exception writeCCAComponents_hdf5_rcpp: "<< ex.what() << "\n";
+    //         return void();
+    //     }
+    //     
+    //     
+    //     return void();
+    //     
+    // }
+    // 
     
     
     
@@ -140,10 +215,10 @@ void writeCCAComponents_hdf5_rcpp (hdf5Dataset* dsX, hdf5Dataset* dsY);
     //         message("ERROR - File does not exists")
     //         return()
     //     }
-    //
-    // # Read data from file
+    //     
+    //     # Read data from file
     //     h5f = H5Fopen(filename)
-    //         XQ <- h5f$Step6$XQ[1:ncolsX, 1:ncolsX]
+    //     XQ <- h5f$Step6$XQ[1:ncolsX, 1:ncolsX]
     //     YQ <- h5f$Step6$YQ[1:ncolsY, 1:ncolsY]
     //     XR <- h5f$Step3$Final_QR$XRt.R
     //     YR <- h5f$Step3$Final_QR$YRt.R
@@ -155,48 +230,47 @@ void writeCCAComponents_hdf5_rcpp (hdf5Dataset* dsX, hdf5Dataset* dsY);
     //     x.names <- h5f$data$.X_dimnames$`2`
     //     y.names <- h5f$data$.Y_dimnames$`2`
     //     h5closeAll()
-    //
-    // # Get qr compact (more or less)
-    //         XR[lower.tri(XR, diag = F)] <- 0
-    //         XQ[upper.tri(XQ, diag = T)] <- 0
-    //         XQR <- XR + XQ
-    //
-    //         YR[lower.tri(YR, diag = F)] <- 0
-    //         YQ[upper.tri(YQ, diag = T)] <- 0
-    //         YQR <- YR + YQ
-    //
-    //         xcoef <- bdSolve(XQR, u)
-    //             ycoef <- bdSolve(YQR, v)
-    //
-    //             rownames(xcoef) <- as.matrix(x.names)
-    //             rownames(ycoef) <- as.matrix(y.names)
-    //
-    // # Store results to HDF5 data file under Results group/folder
-    // #     cor, xcoef, ycoef, xcenter, ycenter, xscores, yscores
-    // #     corr.X.xscores, corr.Y.xscores, corr.X.yscores, corr.Y.yscores
-    //             bdCreate_hdf5_matrix(filename, object = xcoef,
-    //                                  group = "Results",  dataset = "xcoef", overwriteDataset = TRUE)
-    //                 bdCreate_hdf5_matrix(filename = filename, object = ycoef,
-    //                                      group = "Results",  dataset = "ycoef", overwriteDataset = TRUE)
-    //
-    //                 bdCreate_hdf5_matrix(filename , object = as.matrix(diag(d)),
-    //                                      group = "Results", dataset = "cor", overwriteDataset = TRUE)
-    //
-    //                 bdCreate_hdf5_matrix(filename, object = xcenter,
-    //                                      group = "Results", dataset = "xcenter", overwriteDataset = TRUE)
-    //                 bdCreate_hdf5_matrix(filename, object = ycenter,
-    //                                      group = "Results", dataset = "ycenter", overwriteDataset = TRUE)
-    //
-    // # devtools::reload(pkgload::inst("BigDataStatMeth"))
-    //                 bdblockmult_hdf5( filename = filename, group = "data", A = "X", B = "xcoef",
-    //                                   groupB = "Results", outgroup = "Results",
-    //                                   outdataset = "xscores", overwrite = TRUE)
-    //                     bdblockmult_hdf5(filename, group = "data", A = "Y", B = "ycoef",
-    //                                      groupB = "Results", outgroup = "Results",
-    //                                      outdataset = "yscores")
-    //
+    //         
+    //     # Get qr compact (more or less)
+    //     XR[lower.tri(XR, diag = F)] <- 0
+    //     XQ[upper.tri(XQ, diag = T)] <- 0
+    //     XQR <- XR + XQ
+    //     
+    //     YR[lower.tri(YR, diag = F)] <- 0
+    //     YQ[upper.tri(YQ, diag = T)] <- 0
+    //     YQR <- YR + YQ
+    //     
+    //     xcoef <- bdSolve(XQR, u)
+    //     ycoef <- bdSolve(YQR, v)
+    //     
+    //     rownames(xcoef) <- as.matrix(x.names)
+    //     rownames(ycoef) <- as.matrix(y.names)
+    //             
+    //     # Store results to HDF5 data file under Results group/folder
+    //     #     cor, xcoef, ycoef, xcenter, ycenter, xscores, yscores
+    //     #     corr.X.xscores, corr.Y.xscores, corr.X.yscores, corr.Y.yscores
+    //     bdCreate_hdf5_matrix(filename, object = xcoef,
+    //                      group = "Results",  dataset = "xcoef", overwriteDataset = TRUE)
+    //     bdCreate_hdf5_matrix(filename = filename, object = ycoef,
+    //                          group = "Results",  dataset = "ycoef", overwriteDataset = TRUE)
+    //     
+    //     bdCreate_hdf5_matrix(filename , object = as.matrix(diag(d)),
+    //                          group = "Results", dataset = "cor", overwriteDataset = TRUE)
+    //     
+    //     bdCreate_hdf5_matrix(filename, object = xcenter,
+    //                          group = "Results", dataset = "xcenter", overwriteDataset = TRUE)
+    //     bdCreate_hdf5_matrix(filename, object = ycenter,
+    //                          group = "Results", dataset = "ycenter", overwriteDataset = TRUE)
+    //     
+    //     bdblockmult_hdf5( filename = filename, group = "data", A = "X", B = "xcoef",
+    //                       groupB = "Results", outgroup = "Results",
+    //                       outdataset = "xscores", overwrite = TRUE)
+    //     bdblockmult_hdf5(filename, group = "data", A = "Y", B = "ycoef",
+    //                      groupB = "Results", outgroup = "Results",
+    //                      outdataset = "yscores")
+    //                     
     // }
-    
+    // 
     
     
 

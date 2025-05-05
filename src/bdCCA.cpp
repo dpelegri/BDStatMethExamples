@@ -48,6 +48,7 @@ void bdCCA_hdf5_rcpp(std::string filename, std::string datasetX,
     try{
         
         int mblocks = 4;
+        int ncolsX, ncolsY;
 
         dsX = new hdf5Dataset(filename, datasetX, false); dsX->openDataset(); 
         getQRbyBlocks_rcpp(dsX, mblocks, bcenter, bscale, false, overwrite, threads );
@@ -66,16 +67,17 @@ void bdCCA_hdf5_rcpp(std::string filename, std::string datasetX,
         delete dsXQ; dsXQ = nullptr;
         delete dsYQ; dsYQ = nullptr;
         
+        ncolsX = dsX->ncols_r();
+        ncolsY = dsY->ncols_r();
+        
         RcppbdSVD_hdf5( dsC->getFileName(), dsC->getGroupName(), dsC->getDatasetName(),  
                         16, 2, 0, false, false, 0, overwrite, false, R_NilValue, R_NilValue);
         
         delete dsC; dsC = nullptr;
-        
-        writeCCAComponents_hdf5_rcpp (dsX, dsY);
-        
         delete dsX; dsX = nullptr;
         delete dsY; dsY = nullptr;
         
+        writeCCAComponents_hdf5_rcpp ( filename, ncolsX, ncolsY);
         
         //     res <- sapply( matrices, bdgetDim_hdf5, filename = filename )
 
