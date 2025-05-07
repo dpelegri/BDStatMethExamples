@@ -16,7 +16,8 @@ License: What license is it under?
 Imports: Rcpp (>= 1.0.12)
 LinkingTo: Rcpp, RcppEigen, Rhdf5lib, BH, BigDataStatMeth
 SystemRequirements: GNU make, C++17
-Depends: BiocStyle, parallel, BigDataStatMeth, rhdf5
+Depends: BiocStyle, parallel, BigDataStatMeth, rhdf5, gridExtra, ggplot2, 
+         magrittr, data.table, dplyr
 LazyData: true
 VignetteBuilder: knitr
 Suggests: BiocStyle, knitr, rmarkdown

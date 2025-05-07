@@ -9,51 +9,84 @@ library(BDStatMethExamples)
 # setwd("~/PhD/TREBALLANT/BDStatMethExamples")
 setwd("/Users/mailos/PhD/dummy/Analyses/TCGA_CCA/")
 
-hdf5_filename <- "cca_tcga_small_rcpp.hdf5"
-
-bdCCA_hdf5_rcpp( hdf5_filename, "data/X", "data/Y", bcenter = TRUE, bscale = FALSE, overwrite = TRUE )
 
 
+setwd("/Users/mailos/PhD/dummy/Analyses/TCGA_CCA")
 
-h5ls(hdf5_filename)
+filecommon <- paste0("https://raw.githubusercontent.com/isglobal-brge/",
+                     "Supplementary-Material/master/Pelegri-Siso_2021/",
+                     "application_examples/CCA/data/")
 
-# 
-# 
-# 
-# # devtools::reload(pkgload::inst("BigDataStatMeth"))
-# 
-# filename <- "/Users/mailos/PhD/dummy/Analyses/TCGA_CCA/cca_tcga_small_rcpp.hdf5"
-# ncolsX <- 500
-# ncolsY <- 339
-# 
-# 
-#     
-#     # Read data from file
-#     h5f = H5Fopen(filename)
-#     XQ <- h5f$Step6$XQ[1:ncolsX, 1:ncolsX]
-#     YQ <- h5f$Step6$YQ[1:ncolsY, 1:ncolsY]
-#     XR <- h5f$Step3$Final_QR$XRt.R
-#     YR <- h5f$Step3$Final_QR$YRt.R
-#     d <- h5f$SVD$CrossProd_XQ_x_YQ$d
-#     u <- h5f$SVD$CrossProd_XQ_x_YQ$u
-#     v <- h5f$SVD$CrossProd_XQ_x_YQ$v
-#     xcenter <- h5f$NORMALIZED$data$mean.X
-#     ycenter <- h5f$NORMALIZED$data$mean.Y
-#     x.names <- h5f$data$.X_dimnames$`2`
-#     y.names <- h5f$data$.Y_dimnames$`2`
-#     h5closeAll()
-#     
-#     # Get qr compact (more or less)
-#     XR[lower.tri(XR, diag = F)] <- 0
-#     XQ[upper.tri(XQ, diag = T)] <- 0
-#     XQR <- XR + XQ
-#     XQR[1:5,1:5]
-#     
-#     
-#    
-#     YR[lower.tri(YR, diag = F)] <- 0
-#     YQ[upper.tri(YQ, diag = T)] <- 0
-#     YQR <- YR + YQ
-#     YQR[1:5,1:5]
-#     
-#     
+Xfile <- paste0(filecommon, "RNA_data_small.zip")
+Yfile <- paste0(filecommon, "Methyl_data_small.zip")
+
+m <- 4
+
+
+
+# ====================================
+# Rcpp Execution
+# ====================================
+
+hdf5_filename_rcpp <- "cca_tcga_small_rcpp.hdf5"
+
+
+bdImportData_hdf5( inFile = Xfile,
+                   destFile = hdf5_filename_rcpp,
+                   destGroup = "data", destDataset = "X",
+                   header = TRUE, rownames = FALSE,
+                   overwrite = TRUE, sep = ",", overwriteFile = TRUE)
+
+bdImportData_hdf5( inFile = Yfile,
+                   destFile = hdf5_filename_rcpp,
+                   destGroup = "data", destDataset = "Y",
+                   header = TRUE, rownames = FALSE,
+                   overwrite = TRUE, sep = ",", overwriteFile = FALSE)
+
+bdCCA_hdf5_rcpp( hdf5_filename_rcpp, "data/X", "data/Y", bcenter = TRUE, 
+                 bscale = FALSE, overwrite = TRUE )
+
+
+
+
+# ====================================
+# R Execution
+# ====================================
+
+hdf5_filename_R <- "cca_tcga_small_R.hdf5"
+
+bdImportData_hdf5( inFile = Xfile,
+                   destFile = hdf5_filename_R,
+                   destGroup = "data", destDataset = "X",
+                   header = TRUE, rownames = FALSE,
+                   overwrite = TRUE, sep = ",", overwriteFile = TRUE)
+
+bdImportData_hdf5( inFile = Yfile,
+                   destFile = hdf5_filename_R,
+                   destGroup = "data", destDataset = "Y",
+                   header = TRUE, rownames = FALSE,
+                   overwrite = TRUE, sep = ",", overwriteFile = FALSE)
+
+
+# devtools::reload(pkgload::inst("BDStatMethExamples"))
+# Execute data directly from HDF5 data file
+bdCCA_hdf5( hdf5_filename_R, "data/X", "data/Y", bcenter = TRUE, 
+            bscale = FALSE, overwrite = TRUE )
+
+
+
+
+
+
+# ====================================
+# Plot data
+# ====================================
+
+# Download metadata
+urlfile <- paste0("https://raw.githubusercontent.com/isglobal-brge/",
+                  "Supplementary-Material/master/Pelegri-Siso_2021/",
+                  "application_examples/CCA/data/metadata.csv")
+metadata <- read.csv(urlfile)
+
+plot_bdCCA( hdf5_filename_rcpp, metadata, "cancer", plot_filename = "TCGA_CCA_rcpp.png" )
+plot_bdCCA( hdf5_filename_R, metadata, "cancer", plot_filename = "TCGA_CCA_R.png" )
