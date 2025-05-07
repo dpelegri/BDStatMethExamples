@@ -40,22 +40,23 @@ bdCCA_hdf5 <- function(filename, X, Y, m = 10,
                             group = "Step6", A = "XQ",
                             groupB = "Step6", B = "YQ",
                             outdataset = "CrossProd_XQ_YQ",
-                            outgroup = "Step7")
-    # # Step 8 :
-    # # z <- svd( tQXQY )
-    # res <- bdSVD_hdf5(file = filename,
-    #                   group = "Step7", dataset = "CrossProd_XQ_YQ",
-    #                   bcenter = FALSE, bscale = FALSE, k = 16, q = 2, threads = 3)
-    # res <- sapply( matrices, bdgetDim_hdf5, filename = filename )
-    # 
-    # 
-    # writeCCAComponents_hdf5( filename, res[2,X], res[2,Y])
-    
-    # if( keepInteResults == FALSE){
-    #     sapply(paste0 ("Step",1:7), function (x) {
-    #         invisible(bdRemove_hdf5_element( filename, element = x))
-    #         print(paste0 (x, "Removed"))
-    #     })
-    # }
+                            outgroup = "Step7", overwrite = TRUE)
+    # Step 8 :
+    # z <- svd( tQXQY )
+    res <- bdSVD_hdf5(file = filename,
+                      group = "Step7", dataset = "CrossProd_XQ_YQ",
+                      bcenter = FALSE, bscale = FALSE, k = 16, q = 2, 
+                      threads = 3, overwrite = TRUE)
+    res <- sapply( matrices, bdgetDim_hdf5, filename = filename )
+
+
+    writeCCAComponents_hdf5( filename, res[2,X], res[2,Y])
+
+    if( keepInteResults == FALSE){
+        sapply(paste0 ("Step",1:7), function (x) {
+            invisible(bdRemove_hdf5_element( filename, element = x))
+            print(paste0 (x, "Removed"))
+        })
+    }
     
 }
