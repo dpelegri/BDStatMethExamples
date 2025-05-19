@@ -4,14 +4,14 @@
 \alias{getQRbyBlocks}
 \title{QR by blocks}
 \usage{
-getQRbyBlocks(strdataset, file, mblocks, center, scale, bcols, overwrt)
+getQRbyBlocks(strdataset, file, m, center, scale, bcols, overwrt)
 }
 \arguments{
 \item{strdataset}{string, dataset path within the hdf5 data file from which we want to calculate the QR}
 
 \item{file}{string file name where dataset to normalize is stored}
 
-\item{mblocks}{number of blocks in which we want to partition the matrix to perform the calculations}
+\item{m}{number of blocks in which we want to partition the matrix to perform the calculations}
 
 \item{center, }{boolean, if true, dataset is centered to perform calculus}
 

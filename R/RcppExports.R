@@ -19,6 +19,8 @@
 #' @param bscale. If TRUE, the data is scaled by dividing the (centered) 
 #' columns of `x` by their standard deviations if `bcenter` is TRUE, or by the 
 #' root mean square otherwise. If FALSE, no scaling is performed.
+#' @param mblocks number of equally sized blocks into which each input matrix 
+#' is partitioned for sequential processing.
 #' @param byrows logical if TRUE, centering is done by subtracting the rows 
 #' means, util when working with hdf5 datasets stored 
 #' in Row Major format.
@@ -26,7 +28,7 @@
 #' hdf5 will be overwritten.
 #' @param threads optional parameter. Integer with numbers of threads to be used
 #' @export
-bdCCA_hdf5_rcpp <- function(filename, datasetX, datasetY, bcenter, bscale, overwrite, threads = NULL) {
-    invisible(.Call('_BDStatMethExamples_bdCCA_hdf5_rcpp', PACKAGE = 'BDStatMethExamples', filename, datasetX, datasetY, bcenter, bscale, overwrite, threads))
+bdCCA_hdf5_rcpp <- function(filename, datasetX, datasetY, bcenter, bscale, mblocks, overwrite, threads = NULL) {
+    invisible(.Call('_BDStatMethExamples_bdCCA_hdf5_rcpp', PACKAGE = 'BDStatMethExamples', filename, datasetX, datasetY, bcenter, bscale, mblocks, overwrite, threads))
 }
 

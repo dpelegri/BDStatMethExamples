@@ -44,7 +44,7 @@ bdImportData_hdf5( inFile = Yfile,
                    overwrite = TRUE, sep = ",", overwriteFile = FALSE)
 
 bdCCA_hdf5_rcpp( hdf5_filename_rcpp, "data/X", "data/Y", bcenter = TRUE, 
-                 bscale = FALSE, overwrite = TRUE )
+                 bscale = FALSE, mblocks = 4, overwrite = TRUE )
 
 
 
@@ -70,8 +70,8 @@ bdImportData_hdf5( inFile = Yfile,
 
 # devtools::reload(pkgload::inst("BDStatMethExamples"))
 # Execute data directly from HDF5 data file
-bdCCA_hdf5( hdf5_filename_R, "data/X", "data/Y", bcenter = TRUE, 
-            bscale = FALSE, overwrite = TRUE )
+bdCCA_hdf5( hdf5_filename_R, "data/X", "data/Y", bcenter = TRUE, m = 4,
+            bscale = FALSE, overwrite = TRUE, keepInteResults = TRUE )
 
 
 
@@ -90,3 +90,22 @@ metadata <- read.csv(urlfile)
 
 plot_bdCCA( hdf5_filename_rcpp, metadata, "cancer", plot_filename = "TCGA_CCA_rcpp.png" )
 plot_bdCCA( hdf5_filename_R, metadata, "cancer", plot_filename = "TCGA_CCA_R.png" )
+
+
+
+# ====================================
+# Benchmark R - Rcpp functions
+# ====================================
+
+bench <- microbenchmark::microbenchmark( 
+    R = bdCCA_hdf5( hdf5_filename_R, "data/X", "data/Y", bcenter = TRUE,
+                    bscale = FALSE, overwrite = TRUE, keepInteResults = TRUE ),
+    Rcpp = bdCCA_hdf5_rcpp( hdf5_filename_rcpp, "data/X", "data/Y", bcenter = TRUE, 
+                            bscale = FALSE, overwrite = TRUE ),
+    times = 5, unit = "milliseconds" )
+
+bench
+
+if (requireNamespace("ggplot2")) {
+    ggplot2::autoplot(bench)
+}

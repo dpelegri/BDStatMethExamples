@@ -96,7 +96,7 @@ plot_bdCCA <- function( hdf5_filename, metadata, pheno,
     
     
     if(!is.null(plot_filename)) {
-        fname <- plot_fiename
+        fname <- plot_filename
         png(filename = fname, width = 1815, height = 900, units = "px")
             grid.arrange( p1, p2, p3, nrow = 1 )
         dev.off()

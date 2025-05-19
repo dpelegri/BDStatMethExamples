@@ -12,8 +12,8 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // bdCCA_hdf5_rcpp
-void bdCCA_hdf5_rcpp(std::string filename, std::string datasetX, std::string datasetY, bool bcenter, bool bscale, bool overwrite, Rcpp::Nullable<int> threads);
-RcppExport SEXP _BDStatMethExamples_bdCCA_hdf5_rcpp(SEXP filenameSEXP, SEXP datasetXSEXP, SEXP datasetYSEXP, SEXP bcenterSEXP, SEXP bscaleSEXP, SEXP overwriteSEXP, SEXP threadsSEXP) {
+void bdCCA_hdf5_rcpp(std::string filename, std::string datasetX, std::string datasetY, bool bcenter, bool bscale, int mblocks, bool overwrite, Rcpp::Nullable<int> threads);
+RcppExport SEXP _BDStatMethExamples_bdCCA_hdf5_rcpp(SEXP filenameSEXP, SEXP datasetXSEXP, SEXP datasetYSEXP, SEXP bcenterSEXP, SEXP bscaleSEXP, SEXP mblocksSEXP, SEXP overwriteSEXP, SEXP threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type filename(filenameSEXP);
@@ -21,15 +21,16 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< std::string >::type datasetY(datasetYSEXP);
     Rcpp::traits::input_parameter< bool >::type bcenter(bcenterSEXP);
     Rcpp::traits::input_parameter< bool >::type bscale(bscaleSEXP);
+    Rcpp::traits::input_parameter< int >::type mblocks(mblocksSEXP);
     Rcpp::traits::input_parameter< bool >::type overwrite(overwriteSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<int> >::type threads(threadsSEXP);
-    bdCCA_hdf5_rcpp(filename, datasetX, datasetY, bcenter, bscale, overwrite, threads);
+    bdCCA_hdf5_rcpp(filename, datasetX, datasetY, bcenter, bscale, mblocks, overwrite, threads);
     return R_NilValue;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_BDStatMethExamples_bdCCA_hdf5_rcpp", (DL_FUNC) &_BDStatMethExamples_bdCCA_hdf5_rcpp, 7},
+    {"_BDStatMethExamples_bdCCA_hdf5_rcpp", (DL_FUNC) &_BDStatMethExamples_bdCCA_hdf5_rcpp, 8},
     {NULL, NULL, 0}
 };
 

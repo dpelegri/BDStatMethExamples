@@ -5,7 +5,7 @@
 #' 
 #' @param strdataset string, dataset path within the hdf5 data file from which we want to calculate the QR
 #' @param file string file name where dataset to normalize is stored
-#' @param mblocks number of blocks in which we want to partition the matrix to perform the calculations
+#' @param m number of blocks in which we want to partition the matrix to perform the calculations
 #' @param center, boolean, if true, dataset is centered to perform calculus
 #' @param bcols boolean if bcols = TRUE matrix it´s splitted by columns if bcols = FALSE, then matrix or dataset is splitted by rows.
 #' @param scale, boolean, if true, dataset is centered to perform calculus
@@ -17,7 +17,7 @@
 #'    
 #' @importFrom data.table %like%
 #' 
-getQRbyBlocks <- function(strdataset, file, mblocks, center, scale, bcols, overwrt)
+getQRbyBlocks <- function(strdataset, file, m, center, scale, bcols, overwrt)
 {
     
     strgroup <- gsub("/.?$", "", strdataset)

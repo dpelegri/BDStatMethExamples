@@ -10,6 +10,7 @@ bdCCA_hdf5_rcpp(
   datasetY,
   bcenter,
   bscale,
+  mblocks,
   overwrite,
   threads = NULL
 )
@@ -27,6 +28,9 @@ as Y vector}
 \item{bcenter}{logical. If TRUE (default), the data is centered by
 subtracting the column means (ignoring NAs) of \code{x} from their corresponding
 columns. If FALSE, no centering is performed.}
+
+\item{mblocks}{number of equally sized blocks into which each input matrix
+is partitioned for sequential processing.}
 
 \item{overwrite, }{boolean if true, previous results in same location inside
 hdf5 will be overwritten.}

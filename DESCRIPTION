@@ -1,7 +1,7 @@
 Package: BDStatMethExamples
 Type: Package
 Title: What the package does (short line)
-Version: 1.0
+Version: 1.1
 Date: 2025-04-26
 Authors@R: 
   c(  person( given = "Dolors",  family = "Pelegri-Siso", 

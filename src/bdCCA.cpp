@@ -26,6 +26,8 @@
 //' @param bscale. If TRUE, the data is scaled by dividing the (centered) 
 //' columns of `x` by their standard deviations if `bcenter` is TRUE, or by the 
 //' root mean square otherwise. If FALSE, no scaling is performed.
+//' @param mblocks number of equally sized blocks into which each input matrix 
+//' is partitioned for sequential processing.
 //' @param byrows logical if TRUE, centering is done by subtracting the rows 
 //' means, util when working with hdf5 datasets stored 
 //' in Row Major format.
@@ -35,7 +37,7 @@
 //' @export
 // [[Rcpp::export]]
 void bdCCA_hdf5_rcpp(std::string filename, std::string datasetX,
-             std::string datasetY, bool bcenter, bool bscale, 
+             std::string datasetY, bool bcenter, bool bscale, int mblocks,
              bool overwrite, Rcpp::Nullable<int> threads = R_NilValue ) 
 {
 
@@ -47,7 +49,7 @@ void bdCCA_hdf5_rcpp(std::string filename, std::string datasetX,
 
     try{
         
-        int mblocks = 4;
+        // int mblocks = 4;
         int ncolsX, ncolsY;
 
         dsX = new hdf5Dataset(filename, datasetX, false); dsX->openDataset(); 
