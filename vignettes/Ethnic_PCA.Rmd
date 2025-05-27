@@ -1,0 +1,374 @@
+---
+title: "How to Perform PCA with the BigDataStatMeth Package: A Practical Example"
+author: 
+- name: Dolors Pelegri
+  affiliation: 
+  - &uab Universitat Autonoma de Barcelona - Universitat Autonoma de Barcelona (UAB)
+  - &isglobal ISGlobal, Centre for Research in Environmental Epidemiology (ISGlobal)
+  - &brge Bioinformatics Research Group in Epidemiolgy (BRGE)
+- name: Juan R. Gonzalez
+  affiliation: 
+  - *uab
+  - *isglobal
+  - *brge
+  email: juanr.gonzalez```isglobal.org
+date: "`r Sys.Date()`"
+output:
+  BiocStyle::html_document:
+    number_sections: yes
+    toc: yes
+    fig_caption: yes
+    toc_float: yes
+abstract: |
+  Description of functions to perform matrix operations, algebra and basic statistical analyses using HDF5 data files.
+vignette: |
+  %\VignetteIndexEntry{Algebra and Statistical Methods for Big Data witn HDF5 files}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteIndexEntry{Integrating TCGA Data}
+  %\VignetteEngine{knitr::rmarkdown}
+bibliography: references.bib
+---
+
+```{r setup, include = FALSE}
+library(knitr)
+library(BiocStyle)
+
+knitr::opts_chunk$set(collapse = TRUE, comment = "", cache = FALSE, message = FALSE, width = 180, crop = NULL)
+```
+
+```{r, cleanup, echo=FALSE, include=FALSE}
+if( isTRUE(file.exists('delayed.hdf5'))) {
+    file.remove('delayed.hdf5')
+}
+if( isTRUE(file.exists('robject.hdf5'))){
+    file.remove('robject.hdf5')
+}
+# if( isTRUE(file.exists('rna_file.hdf5'))){
+#     file.remove('rna_file.hdf5')
+# }
+```
+
+# Overview
+
+This package implements several matrix operations using `Matrix` objects as well as HDF5 data files. Some basic algebra operations that can also be computed that are useful to implement  statistical analyses using standard methodologies such as principal component analyses (PCA) or least squares estimation. The package also contains specific statistical methods mainly used in `omic` data analysis such as lasso regression. All procedures to work with objects loaded in memory can be found in [BigDataStatMeth_memory](https://github.com/isglobal-brge/BigDataStatMeth/blob/master/vignettes/BigDataStatMeth_memory.html) vignette.
+
+
+# Prerequisites
+
+The package requires other packages from `CRAN` and `Bioconductor` to be installed. 
+
+- `CRAN`: `Matrix`, `RcppEigen` and `RSpectra`.
+- `Bioconductor`:  `HDF5array`, `rhdf5` 
+
+The user can execute this code to install the required packages:
+
+```{r install_required, eval=FALSE}
+# Install BiocManager (if not previously installed)
+install.packages("BiocManager") 
+
+# Install required packages
+BiocManager::install(c("Matrix", "RcppEigen", "RSpectra",
+                       "HDF5Array", "rhdf5"))
+```
+
+
+Our package needs to be installed from source code. In such cases, a collection of software (e.g. C, C++, Fortran, ...) are required, mainly for Windows users. These programs can be installed using [Rtools](https://cran.r-project.org/bin/windows/Rtools/).
+
+
+
+# Install package
+
+Once required packages and Rtools are installed, `BigDataStatMeth` package can be installed from our GitHub repository as follows:
+
+```{r, install, eval=FALSE}
+# Install devtools and load library (if not previously installed)
+install.packages("devtools") 
+library(devtools)
+
+# Install BigDataStatMeth 
+install_github("isglobal-brge/BigDataStatMeth")
+# alternative:
+install_github("dpelegri/BigDataStatMeth_R-Cpp_API")
+```
+
+
+# Getting started
+
+First, let us start by loading the required packages to describe the main capabilities of the package
+
+```{r, load, cache=FALSE}
+library(rhdf5)
+library(BigDataStatMeth)
+```
+
+
+# Previous knowledge
+
+## HDF5 data files
+
+Hierarchical Data Format (HDF) is a set of file formats  designed to store and organize large amounts of data. It is supported by The HDF Group, a non-profit corporation whose mission is to ensure continued development of HDF5 technologies and the continued accessibility of data stored in HDF.
+
+HDF5 is a technology suite that makes possible the management of extremely large and complex data collections, can accomodate virtually every kind of data in a single file, sequences, images, SNP matrices, and every other type of data and metadata associated with an experiment.
+
+There is no limit on the number or size of data objects in the collection, giving great flexibility for omic data. Is high-performance I/O with a rich set of integrated performance features that allow for access time and storage space optimizations
+
+HDF5 file structure include only *two major types of object*:
+
+- `Datasets`, which are multidimensional arrays of a homogeneous type. For example, datasets for omics data could be to genomics, transcriptomics, epigenomics, proteomics and/or metabolomics experiments
+
+- `Groups`, which are container structures which can hold datasets and other groups
+
+This results in a truly hierarchical, filesystem-like data format
+
+```{r hdf5Img, out.width = '100%', fig.align = 'center', fig.cap = "HDF5 hierarchical structure", echo=FALSE}
+knitr::include_graphics("imgs/hdf5_squema.jpg")
+```
+
+
+## Basics in rhdf5
+
+**Create hdf5 file**
+
+We have implemented the `bdCreate_hdf5_matrix_file ()` function to create an hdf5 file with a group and a dataset in a single step. This function allows to create datasets from a standard R matrices from `Matrix` objects.
+
+```{r hdf5Create}
+library(rhdf5)
+
+set.seed(5234)
+n <- 500
+m <- 600
+A <- matrix(rnorm(n*m,mean=0,sd=1), n,m)
+
+# We also can create a dataset from R matrix object
+bdCreate_hdf5_matrix(filename = "robject.hdf5", 
+                     object = A,
+                     group = "INPUT", 
+                     dataset = "A",
+                     overwriteFile = TRUE)
+```
+
+We see 0 in the console, indicating that no errors where found when creating the hdf5 file. Notice that a file called "robject.hdf5" will be created in the working directory
+
+```{r ls}
+list.files(pattern = "*.hdf5")
+```
+
+
+**Add datasets in hdf5 file**
+
+The function `bdCreate_hdf5_matrix()` also allows to add a dataset in a existing hdf5 file. We can create the dataset in any group, if group doesn't exists in file, the group is created before append the dataset. 
+
+```{r hdf5AddDataset}
+set.seed(5234)
+n <- 100
+m <- 10000
+A <- matrix(rnorm(n*m,mean=0,sd=1), n, m)
+
+set.seed(5234)
+n <- 50
+m <- 12000
+B <- matrix(rnorm(n*m,mean=3,sd=0.5), n, m)
+
+# We create another data file (delayed.hdf5) with a matrix A.
+# The group is called INPUT, overwriteFile is set to true to 
+# overwrite a file if exists
+bdCreate_hdf5_matrix(filename = "delayed.hdf5", 
+                     object = A, 
+                     group = "INPUT", 
+                     dataset = "A", 
+                     overwriteFile = TRUE)
+
+# And them, we add another matrix B to the same group
+bdCreate_hdf5_matrix(object = B, 
+                filename = "delayed.hdf5", 
+                group = "INPUT", 
+                dataset = "B")
+```
+
+
+**Open and get hdf5 content file**
+
+We can open an existing file show contents and access data using functions from `rhdf5` package. `rhdf5` is an R interface for HDF5. The file must always be opened before working with it.
+
+With `htls ()` function we get the the list of an hdf5 content without the need of open the file.
+
+```{r hdf5Show}
+# Examine hierarchy before open file
+h5ls("delayed.hdf5")
+```
+
+Once opened, it can be seen just typing its name. In that case, we only get the current level in the hierarchical tree
+
+```{r hdf5Open, cache=FALSE}
+# Open file
+h5fdelay <- H5Fopen("delayed.hdf5")
+# Show hdf5 hierarchy (groups)
+h5fdelay
+```
+
+NOTE: We can also use [hdfview](https://www.hdfgroup.org/downloads/hdfview/)
+
+
+
+**Access datasets data**
+
+The \$ operator can be used to access the next group level, this operator reads the object from disk. We can assign the dataset contents to an R object in order to work with it.
+
+```{r hdf5Dataset}
+Bdata <- h5fdelay$INPUT$B
+Bdata[1:3,1:5]
+```
+
+
+
+
+# PCA - A practical example
+
+We begin by downloading the example dataset from GitHub and loading the GDS file
+into memory using `gdsfmt} \citep{zheng2012high} and `SeqArray}
+\citep{zheng2017seqarray}.
+
+
+
+```{r loadlibraries, echo=TRUE, eval=TRUE}
+library(BigDataStatMeth)
+library(gdsfmt)
+library(rhdf5)
+library(tidyverse)
+library(data.table)
+library(grDevices)
+library(ggplot2)
+library(gridExtra)
+```
+
+```{r ethnic_definevars, echo=TRUE, eval=TRUE}
+download.file(paste0("https://raw.githubusercontent.com/isglobal-brge/",
+                     "Supplementary-Material/master/Pelegri-Siso_2021/",
+                     "application_examples/PCA/data/1000G_ethnic.zip"),
+              destfile = "1000G_ethnic.zip")
+unzip("1000G_ethnic.zip")
+
+pheno_file <- paste0("https://raw.githubusercontent.com/isglobal-brge/",
+                     "Supplementary-Material/master/Pelegri-Siso_2021/",
+                     "application_examples/PCA/data/1000G_samples.tsv")
+
+filename <- "1000G_ethnic.gds"
+PCA_filename <- "1000G_ethnic.hdf5"
+```
+
+
+We then extract the SNP data, format it by assigning sample IDs as row names
+and rsIDs as column names, and save it in HDF5 format using the
+`bdCreate_hdf5_matrix` function.
+
+```{r ethnic_loadfile, echo=TRUE, eval=TRUE, cache = TRUE}
+gds<-gdsfmt::openfn.gds(filename)
+    geno <- index.gdsn(gds, "genotype")
+    genotype <-  read.gdsn( geno )
+    rownames(genotype) <- read.gdsn(index.gdsn(gds, "sample.id"))
+    colnames(genotype) <- read.gdsn(index.gdsn(gds, "snp.rs.id"))
+gdsfmt::closefn.gds(gds)
+
+bdCreate_hdf5_matrix(object = genotype, filename = PCA_filename,
+                     group = "data", dataset = "geno", transp = FALSE,
+                     overwriteFile = TRUE, overwriteDataset = FALSE)
+```
+
+
+Now we can perform PCA directly on the data stored in the HDF5 file using the
+`bdPCA_hdf5` function implemented in the `BigDataStatMeth` package.
+When running the PCA, we specify the file name containing the data as well as
+the path to the dataset within the file. Additionally, we can optionally specify
+whether the data should be centered and/or scaled—by default, centering and
+scaling are disabled. In this example, we center the data but do not scale it.
+We can also define the number of threads to use.
+
+
+```{r ethnic_PCA, echo=TRUE, eval=TRUE, cache = TRUE}
+res <- bdPCA_hdf5(filename = PCA_filename, 
+                  group = "data", 
+                  dataset = "geno",
+                  bcenter = TRUE, 
+                  bscale = FALSE, 
+                  k = 8, 
+                  q = 1,
+                  threads = 8,
+                  overwrite = TRUE)
+```
+
+We apply the block-wise algorithm for the PCA specifying the
+number of levels and partitions to enhance the performance of the PCA computation.
+In our example, PCA is executed using a single level (`q = 1`) divided into
+four blocks (`k = 4`), resulting in PCA computations on matrices of
+approximately 2504~×~20700.
+
+
+We illustrate the contest of the HDF5 data file.
+
+```{r ethnic_h5lsn, echo=TRUE, eval=TRUE}
+h5ls(PCA_filename)[
+    which( (h5ls(PCA_filename)$group %like% '/PCA/geno')) ,c(1:3,5)]
+```
+
+
+We can see that the results have been stored in different datasets and can be
+retrieved to perform further analysis, apply filters or transformations.
+
+```{r hdf5_ethnic_file, echo=TRUE, eval=TRUE}
+components <- h5read(PCA_filename, "/PCA/geno/components")
+components <- as.data.frame(components)
+colnames(components) <- sprintf("PC%s",seq(1:dim(components)[2]))
+components$`Sample name` <- h5read(PCA_filename, "/data/.geno_dimnames/1") [,1]
+```
+
+
+We use `ggplot2` to visualize the data. First, we load the relevant results 
+stored in the HDF5 file into memory. Specifically, we extract
+the first two principal components (PC1 and PC2) and merge them with the
+phenotype data containing ancestry labels for the subjects. illustrates how the 
+first two principal components effectively cluster individuals according to their continental ancestries.
+
+
+```{r ethnic_Plots, echo=TRUE, eval=TRUE}
+pheno <- read_delim( pheno_file, delim="\t", escape_double=FALSE, trim_ws=TRUE)
+CompleteData <- merge(components, pheno, by = "Sample name" )
+
+# Plot
+
+ggplot( CompleteData, aes(PC1, PC2, color = `Superpopulation code`) ) +
+    geom_point(  size = 1.4 ) +
+    theme(
+        axis.text = element_text(size = 18, face="bold"),
+        axis.title = element_text(size = 20),
+        legend.background = element_blank(),
+        legend.key = element_blank(),
+        legend.text = element_text( size = 15),
+        panel.background = element_rect(fill = "white", colour = "black"),
+        strip.background = element_blank(),
+        plot.background = element_blank(),
+        panel.grid = element_blank(),
+        legend.title=element_blank()
+    ) +
+    guides(colour = guide_legend(override.aes = list(size=8)))
+```
+
+# Exercice
+## SVD Computation with BigDataStatMeth from Genomic GDS 
+
+You will perform a Singular Value Decomposition (SVD) using the BigDataStatMeth R-C++ API from a genomic dataset stored in GDS format. The goal is to preprocess the data, store it in an HDF5 format, and explore the main components from the cleaned dataset.
+
+- Instructions
+- Load the GDS file containing genomic data.
+- Create an HDF5 matrix from the GDS data using bdCreate_hdf5_matrix_file() or a similar helper function from BigDataStatMeth.
+- Apply Quality Control Filters:
+    - Remove SNPs with Minor Allele Frequency (MAF) < 5%
+    - Remove SNPs with > 5% missing values 
+    Hint: Check the available QC-related functions in the BigDataStatMeth package, such as `bdRemoveMAF_hdf5()` or `bdRemovelowdata_hdf5()`.
+- Impute missing data using mean imputation or any supported imputation method in the package.
+    Hint: Check the available QC-related functions in the BigDataStatMeth package, such as `bdImputeSNPs_hdf5()`.
+- Perform SVD decomposition on the quality-controlled dataset using bdSVD_hdf5().
+- Explore the output HDF5 file:
+- List datasets and structure using h5ls() or appropriate inspection function.
+- Plot the SVD results:
+    - Plot the cumulative percentage of explained variance
+    - Plot the first two principal components with appropriate labels or color coding if metadata is available.

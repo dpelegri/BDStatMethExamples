@@ -1,0 +1,187 @@
+---
+title: "SVD Exercice - Solution"
+author: 
+- name: Dolors Pelegri
+  affiliation: 
+  - &uab Universitat Autonoma de Barcelona - Universitat Autonoma de Barcelona (UAB)
+  - &isglobal ISGlobal, Centre for Research in Environmental Epidemiology (ISGlobal)
+  - &brge Bioinformatics Research Group in Epidemiolgy (BRGE)
+- name: Juan R. Gonzalez
+  affiliation: 
+  - *uab
+  - *isglobal
+  - *brge
+  email: juanr.gonzalez```isglobal.org
+date: "`r Sys.Date()`"
+output:
+  BiocStyle::html_document:
+    number_sections: yes
+    toc: yes
+    fig_caption: yes
+    toc_float: yes
+abstract: |
+  Description of functions to perform matrix operations, algebra and basic statistical analyses using HDF5 data files.
+vignette: |
+  %\VignetteIndexEntry{Algebra and Statistical Methods for Big Data witn HDF5 files}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteIndexEntry{Integrating TCGA Data}
+  %\VignetteEngine{knitr::rmarkdown}
+bibliography: references.bib
+---
+
+
+```{r, install, eval=TRUE}
+
+library(gdsfmt)
+library(SeqArray)
+library(BigDataStatMeth)
+library(rhdf5)
+library(grDevices)
+
+library(ggplot2)
+library(ggthemes)
+
+
+
+## 1.- Load gds file 
+## ##########################################
+
+gds_filename <- "./chr17inv_small.gds"
+res_filename <- "./chr17.hdf5"
+
+# Open gds file
+gds<-gdsfmt::openfn.gds(gds_filename)
+
+# Get genotype data
+geno <- index.gdsn(gds, "genotype")
+feno <- index.gdsn(gds, "sample.annot/phenotype")
+genotype <- read.gdsn( geno )
+fenotype <- read.gdsn(feno)
+
+# Set colnames and rownames
+rownames(genotype) <- read.gdsn(index.gdsn(gds, "sample.id"))
+colnames(genotype) <- read.gdsn(index.gdsn(gds, "snp.id"))
+
+# Close gds file
+gdsfmt::closefn.gds(gds)
+
+
+## 2.- Write data as hdf5 Data File
+## ##########################################
+
+bdCreate_hdf5_matrix( filename = res_filename, 
+          object = genotype, 
+          group = "invs", 
+          dataset = "geno", 
+          overwriteFile = TRUE,
+          overwriteDataset = TRUE)
+
+
+## 3.- Remove NA with percent NA>5%
+## ##########################################
+
+# Remove Samples with more or equal to 5 % of missing data
+remsamples <- bdRemovelowdata_hdf5(res_filename, 
+                              group = "invs", 
+                              dataset = "geno", 
+                              outgroup = "invs", 
+                              outdataset = "genofilter", 
+                              bycols = FALSE, pcent = 0.05)
+
+
+## 3.2 - Remove MAF 5%
+## ##########################################
+
+# Remove Samples with more or equal to 10 % of missing data
+ressnps <- bdRemoveMAF_hdf5 (res_filename, 
+                                 group = "invs", 
+                                 dataset = "genofilter", 
+                                 outgroup = "invs", 
+                                 outdataset = "genofilter_maf", 
+                                 blocksize = 1000,
+                                 bycols = TRUE, maf = 0.05, 
+                                 overwrite = TRUE)
+
+
+## 4.- Impute Missing Data
+## ##########################################
+
+bdImputeSNPs_hdf5( res_filename, 
+                    group = "invs", 
+                    dataset = "genofilter_maf", 
+                    bycols = TRUE, 
+                    outgroup = "invs", 
+                    outdataset = "genofilter_maf",
+                    overwrite = TRUE)
+
+
+## 5.- Perform SVD decomposition from QC Data
+## ##########################################
+
+res <- bdSVD_hdf5(file = res_filename, 
+                  group = "invs", 
+                  dataset = "genofilter_maf", 
+                  k = 40, 
+                  q = 1,
+                  threads = 8, 
+                  bcenter = TRUE, 
+                  bscale = TRUE)
+
+
+## 6.- Get data from hdf5 data file
+## ##########################################
+
+# Show content file
+h5ls(res_filename)
+
+h5fsvd = H5Fopen(res_filename)
+
+    v <- h5fsvd$SVD$genofilter_maf$v
+    d <- h5fsvd$SVD$genofilter_maf$d
+    u <- h5fsvd$SVD$genofilter_maf$u
+    
+    colnames(u) <- sprintf("PC%s",seq(1:dim(u)[2]))
+    colnames(v) <- sprintf("PC%s",seq(1:dim(v)[2]))
+
+h5closeAll()
+
+
+## 7.- Analyze percent Variança acumulada
+## #######################################################
+
+# Get variance explained by principal components, the chosen factors should explain at least 70 to 80% of variance.
+rho <- d^2/sum(d^2)
+cumsum(rho[1:10])
+
+# First 2 components explains...%
+plot(cumsum(rho))
+abline( h=0.8, col="red", lty = 2)
+
+
+## 8.- Plot 2 first components
+## ##########################################
+
+
+p <- ggplot(as.data.frame(u), aes(PC1, PC2, color = PC1) )+
+  geom_point(  size = 0.5 ) +
+  scale_color_gradientn(colours = c('yellow','orange','darkred'),
+                        n.breaks = 3,
+                        breaks = c(-0.002,-0.001,0.001),
+                        labels = c("NI/NI", "NI/II", "II/II") ) +
+  labs(x = "PC1",
+       y = "PC2") +
+  theme(
+    text = element_text( size = 15),
+    legend.background = element_blank(),
+    legend.key = element_blank(),
+    panel.background = element_blank(),
+    panel.border = element_blank(),
+    strip.background = element_blank(),
+    plot.background = element_blank(),
+    panel.grid = element_blank(),
+    legend.title=element_blank()) +
+  geom_rangeframe()
+
+print(p)
+
+```
