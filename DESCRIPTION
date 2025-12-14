@@ -1,7 +1,7 @@
 Package: BDStatMethExamples
 Type: Package
 Title: What the package does (short line)
-Version: 1.1
+Version: 1.2
 Date: 2025-04-26
 Authors@R: 
   c(  person( given = "Dolors",  family = "Pelegri-Siso", 
@@ -13,15 +13,15 @@ Authors@R:
 Maintainer: Who to complain to <yourfault@somewhere.net>
 Description: More about what it does (maybe more than one line)
 License: What license is it under?
-Imports: Rcpp (>= 1.0.12)
+Imports: Rcpp (>= 1.0.0)
 LinkingTo: Rcpp, RcppEigen, Rhdf5lib, BH, BigDataStatMeth
 SystemRequirements: GNU make, C++17
 Depends: BiocStyle, parallel, BigDataStatMeth, rhdf5, gridExtra, ggplot2, 
-         magrittr, data.table, dplyr
+         magrittr, data.table, dplyr, stats, vegan
 LazyData: true
 VignetteBuilder: knitr
 Suggests: BiocStyle, knitr, rmarkdown
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.1
+RoxygenNote: 7.3.2
 NeedsCompilation: yes

@@ -3,6 +3,7 @@
 
 #include <Rcpp.h>
 #include "BigDataStatMeth.hpp"
+#include "hdf5Utilities/hdf5BindDatasets.hpp"
 
 
 using namespace Rcpp;
@@ -107,6 +108,7 @@ void writeCCAComponents_hdf5_rcpp (hdf5Dataset* dsX, hdf5Dataset* dsY);
     
     
     
+    // void writeCCAComponents_hdf5_rcpp(std::string filename, int ncolsX, int ncolsY, bool brotated)
     void writeCCAComponents_hdf5_rcpp(std::string filename, int ncolsX, int ncolsY)
     {
         
@@ -117,6 +119,11 @@ void writeCCAComponents_hdf5_rcpp (hdf5Dataset* dsX, hdf5Dataset* dsY);
         write_components( Rcpp::_["filename"] = wrap(filename),
                           Rcpp::_["ncolsX"]  = ncolsX,
                           Rcpp::_["ncolsY"]  = ncolsY); 
+        
+        // write_components( Rcpp::_["filename"] = wrap(filename),
+        //                   Rcpp::_["ncolsX"]  = ncolsX,
+        //                   Rcpp::_["ncolsY"]  = ncolsY,
+        //                   Rcpp::_["rotated_coefs"]  = wrap(brotated)); 
         
         return void();
     }
