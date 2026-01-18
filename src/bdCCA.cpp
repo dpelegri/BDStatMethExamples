@@ -64,7 +64,7 @@ void bdCCA_hdf5_rcpp(std::string filename, std::string datasetX,
         dsC = new hdf5Dataset(filename, "Step7", "CrossProd_XQ_YQ", overwrite);
         
         int optimBlock = getMaxBlockSize( dsXQ->nrows(), dsXQ->ncols(), dsYQ->nrows(), dsYQ->ncols(), 2, R_NilValue);
-        dsC = BigDataStatMeth::crossprod(dsXQ, dsYQ, dsC, optimBlock, optimBlock/2, true, true, threads);
+        dsC = BigDataStatMeth::crossprod(dsXQ, dsYQ, dsC, false, optimBlock, optimBlock/2, true, true, threads);
         
         delete dsXQ; dsXQ = nullptr;
         delete dsYQ; dsYQ = nullptr;
