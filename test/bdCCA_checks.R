@@ -7,14 +7,14 @@ library(BDStatMethExamples)
 # devtools::reload(pkgload::inst("BDStatMethExamples"))
 
 # setwd("~/PhD/TREBALLANT/BDStatMethExamples")
-setwd("/Users/mailos/PhD/dummy/Analyses/TCGA_CCA/")
+# setwd("/Users/mailos/PhD/dummy/Analyses/TCGA_CCA/")
 
 
 
-setwd("/Users/mailos/PhD/dummy/Analyses/TCGA_CCA")
+setwd("/Users/mailos/PhD/dummy/Analyses/TCGA_CCA_max2")
 
 filecommon <- paste0("https://raw.githubusercontent.com/isglobal-brge/",
-                     "Supplementary-Material/master/Pelegri-Siso_2021/",
+                     "Supplementary-Material/master/Pelegri-Siso_2025/",
                      "application_examples/CCA/data/")
 
 Xfile <- paste0(filecommon, "RNA_data_small.zip")
@@ -88,8 +88,14 @@ urlfile <- paste0("https://raw.githubusercontent.com/isglobal-brge/",
                   "application_examples/CCA/data/metadata.csv")
 metadata <- read.csv(urlfile)
 
-plot_bdCCA( hdf5_filename_rcpp, metadata, "cancer", plot_filename = "TCGA_CCA_rcpp.png" )
-plot_bdCCA( hdf5_filename_R, metadata, "cancer", plot_filename = "TCGA_CCA_R.png" )
+# plot_bdCCA( hdf5_filename_rcpp, metadata, "cancer", plot_filename = "TCGA_CCA_rcpp.png" )
+# plot_bdCCA( hdf5_filename_R, metadata, "cancer", plot_filename = "TCGA_CCA_R.png" )
+
+plot_bdCCA( hdf5_filename_rcpp, metadata, "cancer", 
+            crossed_coefs = TRUE, plot_filename = "TCGA_CCA_rcpp_cross2.png" )
+
+plot_bdCCA( hdf5_filename_rcpp, metadata, "cancer", 
+            crossed_coefs = TRUE, plot_filename = "TCGA_CCA_rcpp_not_cross2.png" )
 
 
 
