@@ -1,2 +1,7 @@
 *.o
 *.so
+*.o
+*.o
+.Rproj.user
+*.o
+*.so
